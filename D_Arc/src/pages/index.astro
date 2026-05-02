@@ -1,0 +1,319 @@
+---
+// CONECTAMOS CON SANITY Y CONFIGURAMOS EL BUILDER DE IMÁGENES
+import Layout from '../layouts/Layout.astro';
+import { sanityClient } from "sanity:client";
+import imageUrlBuilder from '@sanity/image-url';
+
+// FUNCIÓN PARA GENERAR URLs DE IMÁGENES DE SANITY
+const builder = imageUrlBuilder(sanityClient);
+function urlFor(source) {
+  return source ? builder.image(source) : null;
+}
+
+// 1. EXTRAEMOS LOS PROYECTOS QUE TIENEN IMÁGENES EN EL PROCESO DE GALERÍA
+const proyectos = await sanityClient.fetch(`*[_type == "proyecto" && defined(procesoGaleria[0].asset)]`);
+// 2. EXTRAEMOS LOS DATOS DEL AUTOR 
+const autor = await sanityClient.fetch(`*[_type == "author"][0]`);
+// 3. FILTRAMOS POR CATEGORIAs
+const conceptArt = proyectos.filter(p => p.categoria === 'Concept Art');
+const characters = proyectos.filter(p => p.categoria === 'Characters');
+// 4. CARRUCEL  DE 3 PRIMEROS PROYECTOS 
+const destacados = proyectos.slice(0, 3);
+---
+
+<Layout title="Portafolio D_Arc">
+  <main class="min-h-screen bg-[#0a0a0a] text-white font-sans pt-24 pb-20">
+    
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 left-0 w-full z-50 flex justify-center py-6 pointer-events-none">
+      <div class="flex gap-8 border border-gray-700/30 rounded-full px-10 py-3 bg-gray-900/20 backdrop-blur-md pointer-events-auto shadow-2xl">
+        <a href="#home" class="hover:text-blue-400 transition-colors font-medium">Home</a>
+        <a href="#gallery" class="hover:text-blue-400 transition-colors font-medium">Gallery</a>
+        <a href="#about" class="hover:text-blue-400 transition-colors font-medium">About Me</a>
+        <a href="#contact" class="hover:text-blue-400 transition-colors font-medium">Contact Me</a>
+      </div>
+    </nav>
+
+    <!-- HERO SLIDER -->
+    <section id="home" class="max-w-5xl mx-auto px-4 mb-20 pt-24">
+      <div class="relative group h-[450px] bg-gray-900 rounded-2xl overflow-hidden border border-gray-700 shadow-2xl">
+        <!-- CONTENEDOR PARA EL CARRUSEL -->
+        <div id="slider-container" class="relative h-full w-full">
+          {destacados.length > 0 ? destacados.map((item, index) => (
+            <div class={`absolute inset-0 transition-opacity duration-700 ease-in-out ${index === 0 ? 'opacity-100' : 'opacity-0'} slider-item`}>
+              {/* IMAGEN PRINCIPAL DEL PROYECTO */}
+              {item.procesoGaleria && item.procesoGaleria[0] ? (
+                <img 
+                  src={urlFor(item.procesoGaleria[0])?.width(1200).url()} 
+                  class="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-[2000ms]" 
+                  alt={item.titulo} 
+                />
+              ) : (
+                <div class="w-full h-full bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
+                  <span class="text-gray-700 font-mono text-xs uppercase tracking-widest">Image Data Missing</span>
+                </div>
+              )}
+
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
+                <p class="text-blue-500 font-mono text-xs tracking-[0.3em] mb-2 uppercase opacity-80">Featured Work</p>
+                <h2 class="text-5xl md:text-6xl font-black tracking-tighter uppercase italic text-white drop-shadow-2xl">
+                  {item.titulo}
+                </h2>
+                <div class="mt-6 h-[1px] w-24 bg-blue-500/50"></div>
+              </div>
+            </div>
+          )) : (
+            /* EN CASO DE NO HABER PROYECTOS DESTACADOS */
+            <div class="h-full w-full flex items-center justify-center bg-gray-900">
+              <p class="text-gray-500 font-mono text-sm animate-pulse">Waiting for synchronization...</p>
+            </div>
+          )}
+        </div>
+        <!-- NAVEGACION ENTRE IMÁGENES -->
+        <button id="prevBtn" class="absolute left-6 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md p-4 rounded-full hover:bg-blue-600 border border-white/10 transition-all z-20 opacity-0 group-hover:opacity-100"> ❮ </button>
+        <button id="nextBtn" class="absolute right-6 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md p-4 rounded-full hover:bg-blue-600 border border-white/10 transition-all z-20 opacity-0 group-hover:opacity-100"> ❯ </button>
+        <!-- LINEAS DE POSICION -->
+        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+          {destacados.map((_, i) => (
+            <div class={`h-1 w-8 rounded-full transition-all ${i === 0 ? 'bg-blue-500' : 'bg-white/20'}`}></div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- GALERÍA DINÁMICA -->
+    <section id="gallery" class="max-w-6xl mx-auto px-4 mb-20">
+      <div class="flex flex-col items-center mb-12">
+        <h2 class="text-xl font-bold border border-gray-600 px-8 py-2 rounded-full mb-10 bg-gray-900/50">Gallery</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 w-full">
+          {proyectos.length > 0 ? proyectos.map((item) => (
+            <div class="flex flex-col items-center gap-4 group">
+              <div class="w-full aspect-[4/5] bg-gray-900 border border-gray-800 rounded-xl overflow-hidden hover:border-blue-500 transition-all cursor-pointer shadow-2xl relative">
+                {/* EXISTENCIA DE IMÁGENES EN EL PROCESO DE GALERÍA */}
+                {item.procesoGaleria && item.procesoGaleria.length > 0 ? (
+                  <>
+                    <img 
+                      src={urlFor(item.procesoGaleria[0]).width(600).url()} 
+                      alt={item.titulo}
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    {/* MINIATURAS DE LOS DEMÁS PASOS DE DIBUJO */}
+                    {item.procesoGaleria.length > 1 && (
+                      <div class="absolute bottom-3 left-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        {item.procesoGaleria.slice(1, 4).map((paso) => (
+                          <div class="w-10 h-10 rounded border border-white/20 overflow-hidden">
+                            <img src={urlFor(paso).width(100).url()} class="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div class="flex flex-col items-center justify-center h-full bg-gray-800 text-gray-500 gap-2">
+                    <span class="text-[10px] uppercase font-mono">Missing Image</span>
+                  </div>
+                )}
+              </div>
+
+              <div class="text-center">
+                <p class="font-mono text-xs uppercase tracking-[0.2em] text-blue-400 mb-1">{item.categoria}</p>
+                <h3 class="font-bold text-lg tracking-tight group-hover:text-blue-300 transition-colors">{item.titulo}</h3>
+              </div>
+            </div>
+          )) : (
+            <p class="col-span-3 text-center text-gray-500 italic py-10">No hay obras publicadas.</p>
+          )}
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT ME -->
+    <section id="about" class="max-w-4xl mx-auto px-4 py-20 border-t border-gray-900">
+      <div class="flex flex-col md:flex-row items-center gap-12">
+        <div class="w-48 h-48 rounded-full border-2 border-blue-500 flex items-center justify-center bg-gray-900 shadow-[0_0_20px_rgba(59,130,246,0.3)] overflow-hidden">
+          {autor?.image ? (
+            <img 
+              src={urlFor(autor.image).width(400).height(400).url()} 
+                alt="D_Arc"
+              class="w-full h-full object-cover"
+            />
+          ) : (
+            <span class="text-gray-500 font-bold italic text-xs">Cargando Foto...</span>
+          )}
+        </div>
+        <div class="flex-1 text-center md:text-left">
+          <h2 class="text-3xl font-black mb-4">About Me</h2>
+          <p class="text-gray-400 leading-relaxed mb-6">
+            Hola, soy Jonathan Cruz Hernandez (D_Arc). Soy un artista digital especializado en Concept Art y diseño de personajes. Mi pasión es crear mundos imaginarios y dar vida a criaturas únicas a través del arte. 
+            Suelo estar constante aprendizaje, he trabajado en proyectos personales y colaborativos que me han permitido desarrollar un estilo propio, caracterizado por su atmósfera oscura y detallada. 
+            Mi objetivo es seguir creciendo como artista y compartir mi visión creativa con el mundo.
+          </p>
+          <div class="space-y-3">
+             <div class="h-1 w-full bg-gray-800 rounded"></div>
+             <div class="h-1 w-5/6 bg-gray-800 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT ME -->
+    <section id="contact" class="max-w-4xl mx-auto px-4 py-24">
+      <div class="flex flex-col items-center">
+        <h2 class="text-xl font-bold border border-gray-600 px-8 py-2 rounded-full mb-12 bg-gray-900/50">Contact Me</h2>
+        <div class="w-full bg-gray-900/40 border border-gray-800 rounded-2xl p-8 backdrop-blur-sm shadow-2xl relative overflow-hidden">
+          <!-- MENSAJE DE ESTADO -->
+          <div id="form-status" class="hidden absolute inset-0 z-20 bg-gray-900/90 backdrop-blur-md flex flex-center items-center justify-center text-center p-6">
+            <p class="text-blue-400 font-mono text-sm uppercase tracking-tighter" id="status-text"></p>
+            <button onclick="document.getElementById('form-status').classList.add('hidden')" class="mt-4 text-xs text-gray-500 underline">Volver a intentar</button>
+          </div>
+          <form id="contact-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- NOMBRE -->
+            <div class="flex flex-col gap-2">
+              <label for="name" class="font-mono text-xs uppercase tracking-widest text-blue-400">User_Name</label>
+              <input 
+                required
+                name="name"
+                type="text" 
+                id="name" 
+                placeholder="Escribe tu nombre..." 
+                class="bg-black/50 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors text-sm text-white"
+              />
+            </div>
+            <!-- EMAIL -->
+            <div class="flex flex-col gap-2">
+              <label for="email" class="font-mono text-xs uppercase tracking-widest text-blue-400">User_Email</label>
+              <input 
+                required
+                name="email"
+                type="email" 
+                id="email" 
+                placeholder="tu@email.com" 
+                class="bg-black/50 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors text-sm text-white"
+              />
+            </div>
+            <!-- CONTENIDO DEL MENSAJE -->
+            <div class="flex flex-col gap-2 md:col-span-2">
+              <label for="message" class="font-mono text-xs uppercase tracking-widest text-blue-400">Message_Input</label>
+              <textarea 
+                required
+                name="message"
+                id="message" 
+                rows="4" 
+                placeholder="Cuéntame sobre tu proyecto o idea..." 
+                class="bg-black/50 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500 transition-colors text-sm resize-none text-white"
+              ></textarea>
+            </div>
+            <!-- BOTÓN DE ENVÍO -->
+            <div class="md:col-span-2 flex justify-center mt-4">
+              <button 
+                type="submit" 
+                id="submit-btn"
+                class="group relative px-12 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] overflow-hidden"
+              >
+                <span class="relative z-10" id="btn-text">Execute_Send</span>
+                <div class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform"></div>
+              </button>
+            </div>
+          </form>
+          <!-- REDES SOCIALES -->
+          <div class="mt-12 pt-8 border-t border-gray-800 flex justify-center gap-8">
+            <a href="https://x.com/yourusername" target="_blank" class="text-gray-500 hover:text-white transition-colors flex items-center gap-2">
+              <span class="font-mono text-xs">X</span>
+            </a>
+            <a href="https://youtube.com/yourusername" target="_blank" class="text-gray-500 hover:text-red-400 transition-colors flex items-center gap-2">
+              <span class="font-mono text-xs">Youtube</span>
+            </a>
+            <a href="https://instagram.com/yourusername" target="_blank" class="text-gray-500 hover:text-pink-400 transition-colors flex items-center gap-2">
+              <span class="font-mono text-xs">Instagram</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- FOOTER -->
+    <footer class="py-10 text-center border-t border-gray-900">
+      <p class="text-gray-600 text-[10px] font-mono tracking-widest uppercase">
+        &copy; 2026 D_Arc // Jonathan Cruz Hernandez // Built with Astro & Sanity
+      </p>
+    </footer>
+
+    <script>
+      const contactForm = document.getElementById('contact-form') as HTMLFormElement;
+      const statusDiv = document.getElementById('form-status');
+      const statusText = document.getElementById('status-text');
+      const btnText = document.getElementById('btn-text');
+      contactForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        // TEXTO DE PROCESAMIENTO
+        if (btnText) btnText.innerText = "Processing...";
+        const formData = new FormData(contactForm);
+        try {
+          const response = await fetch('/api/send-email', {
+            method: 'POST',
+            body: formData,
+          });
+          const result = await response.json();
+          if (response.ok) {
+            // EXITO
+            if (statusDiv && statusText) {
+              statusDiv.classList.remove('hidden');
+              statusDiv.classList.add('flex');
+              statusText.innerText = "SUCCESS: Message transmitted.";
+              statusText.classList.remove('text-red-500');
+              statusText.classList.add('text-blue-400');
+              // LIMPIAMOS EL FORMULARIO
+              contactForm.reset();
+              // OCULTAMOS EL MENSAJE DESPUÉS DE 4 SEGUNDOS
+              setTimeout(() => {
+                statusDiv.classList.add('hidden');
+                statusDiv.classList.remove('flex');
+              }, 4000);
+            }
+          } else {
+            throw new Error(result.message);
+          }
+        } catch (error) {
+          // ERROR DE CONEXIÓN O SERVIDOR
+          if (statusDiv && statusText) {
+            statusDiv.classList.remove('hidden');
+            statusDiv.classList.add('flex');
+            statusText.innerText = "CRITICAL_ERROR: Connection failed.";
+            statusText.classList.add('text-red-500');
+          }
+        } finally {
+          if (btnText) btnText.innerText = "Execute_Send";
+        }
+      });
+    </script>
+    
+  </main>
+</Layout>
+
+<script>
+  let currentIndex = 0;
+  const items = document.querySelectorAll('.slider-item');
+  const totalItems = items.length;
+
+  function showSlide(index) {
+    items.forEach((item, i) => {
+      item.classList.toggle('opacity-100', i === index);
+      item.classList.toggle('opacity-0', i !== index);
+    });
+  }
+
+  document.getElementById('nextBtn')?.addEventListener('click', () => {
+    currentIndex = (currentIndex + 1) % totalItems;
+    showSlide(currentIndex);
+  });
+
+  document.getElementById('prevBtn')?.addEventListener('click', () => {
+    currentIndex = (currentIndex - 1 + totalItems) % totalItems;
+    showSlide(currentIndex);
+  });
+
+  // CAMBIO AUTOMÁTICO CADA 7 SEGUNDOS
+  setInterval(() => {
+    currentIndex = (currentIndex + 1) % totalItems;
+    showSlide(currentIndex);
+  }, 7000);
+</script>
