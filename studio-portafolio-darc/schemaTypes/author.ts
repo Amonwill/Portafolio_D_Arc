@@ -1,4 +1,3 @@
-// schemas/author.ts
 export default {
   name: 'author',
   title: 'Autor',
