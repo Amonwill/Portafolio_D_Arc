@@ -9,7 +9,7 @@ export default defineConfig({
   adapter: netlify(),
 
   vite: {
-    plugins: [tailwindcss()],
+    plugins:[tailwindv4()],
   },
 
   integrations: [
