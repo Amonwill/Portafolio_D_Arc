@@ -2,13 +2,45 @@
 import '../styles/global.css';
 ---
 <!doctype html>
-<html lang="es">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<title>Portafolio DArc</title>
-	</head>
-	<body class="bg-[#0a0a0a]"> 
-		<slot />
-	</body>
+<html lang="es" class="scroll-smooth">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <title>Portafolio D_Arc</title>
+    </head>
+    <body class="bg-[#0a0a0a] antialiased selection:bg-blue-500/30"> 
+        <slot />
+    </body>
 </html>
+
+<style is:global>
+    :root {
+        color-scheme: dark;
+    }
+    html {
+        scroll-behavior: smooth;
+    }
+    body {
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #0a0a0a;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #1e1e1e;
+        border-radius: 10px;
+        transition: background 0.3s ease;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #2563eb;
+    }
+    html {
+        scrollbar-gutter: stable;
+    }
+</style>
