@@ -1,380 +1,69 @@
 ---
+// src/pages/index.astro
 import Layout from '../layouts/Layout.astro';
 import { sanityClient } from "sanity:client";
 import imageUrlBuilder from '@sanity/image-url';
 
+import Navbar from '../components/Navbar.astro';
+import HeroSlider from '../components/HeroSlider.astro';
+import Gallery from '../components/Gallery.astro';
+import About from '../components/About.astro';
+import Contact from '../components/Contact.astro';
+import Footer from '../components/Footer.astro';
+
 const builder = imageUrlBuilder(sanityClient);
-function urlFor(source: any) {
-  return source ? builder.image(source) : null;
-}
+const urlFor = (source: any) => source ? builder.image(source) : null;
 
-// 1. CONSULTA DE PROYECTOS DESTACADOS
-const dataDestacados = await sanityClient.fetch(`
-  *[_type == "destacados"][0] {
-    proyectosDestacados[]-> {
-      titulo,
-      slug,
-      categoria,
-      procesoGaleria,
-      "portada": procesoGaleria[-1]
-    }
-  }
-`);
-
-// 2. CONSULTA DE PROYECTOS ORDENADOS POR FECHA
-const proyectos = await sanityClient.fetch(`
-  *[_type == "proyecto" && defined(slug.current) && defined(procesoGaleria[0].asset)] | order(_createdAt desc) {
-    titulo,
-    slug,
-    categoria,
-    _createdAt,
-    procesoGaleria,
-    "portada": procesoGaleria[-1] 
-  }
-`);
-const destacados = dataDestacados?.proyectosDestacados || proyectos.slice(0, 3);
+// FETCHING DATA
+const dataDestacados = await sanityClient.fetch(`*[_type == "destacados"][0]{ proyectosDestacados[]->{ titulo, slug, categoria, procesoGaleria, "portada": procesoGaleria[-1] } }`);
+const proyectos = await sanityClient.fetch(`*[_type == "proyecto" && defined(slug.current) && defined(procesoGaleria[0].asset)] | order(_createdAt desc){ titulo, slug, categoria, _createdAt, procesoGaleria, "portada": procesoGaleria[-1] }`);
 const autor = await sanityClient.fetch(`*[_type == "author"][0]`);
+const habilidadesData = await sanityClient.fetch(`*[_type == "habilidades"]{ nombre, icono }`);
 
-// 3. CONSULTA DE HABILIDADES DESDE SANITY
-const habilidadesData = await sanityClient.fetch(`
-  *[_type == "habilidades"] {
-    nombre,
-    icono
-  }
-`);
+const destacados = dataDestacados?.proyectosDestacados || proyectos.slice(0, 3);
 ---
 
 <Layout title="Portafolio D_Arc">
   <main class="min-h-screen bg-[#0a0a0a] text-white font-sans pt-24 pb-20">
-    
-    <!-- BARRA DE NAVEGACIÓN -->
-    <nav class="fixed top-0 left-0 w-full z-50 flex justify-center py-6 pointer-events-none">
-      <div class="flex gap-8 border border-gray-700/30 rounded-full px-10 py-3 bg-gray-900/20 backdrop-blur-md pointer-events-auto shadow-2xl">
-        <a href="#home" class="hover:text-blue-400 transition-colors font-medium">Inicio</a>
-        <a href="#gallery" class="hover:text-blue-400 transition-colors font-medium">Galeria</a>
-        <a href="#about" class="hover:text-blue-400 transition-colors font-medium">Sobre Mi</a>
-        <a href="#contact" class="hover:text-blue-400 transition-colors font-medium">Contacto</a>
-      </div>
-    </nav>
+    <Navbar />
+    <HeroSlider destacados={destacados} urlFor={urlFor} />
+    <Gallery proyectos={proyectos} urlFor={urlFor} />
+    <About autor={autor} habilidades={habilidadesData} proyectos={proyectos} urlFor={urlFor} />
+    <Contact />
+    <Footer />
 
-    <!-- PANTALLA PRINCIPAL / HERO -->
-    <section id="home" class="max-w-5xl mx-auto px-4 mb-20 pt-24">
-      <div class="relative group h-[450px] bg-gray-900 rounded-2xl overflow-hidden border border-gray-700 shadow-2xl">
-        <div id="slider-container" class="relative h-full w-full">
-          {destacados.map((item: any, index: number) => (
-            <div class={`absolute inset-0 transition-opacity duration-700 ease-in-out slider-item ${index === 0 ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-              <img 
-                src={urlFor(item.portada)?.width(1200).url()} 
-                class="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-[2000ms]" 
-                alt={item.titulo} 
-              />
-              <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-                <p class="text-blue-500 font-mono text-xs tracking-[0.3em] mb-2 uppercase opacity-80">Featured Work</p>
-                <h2 class="text-5xl md:text-6xl font-black tracking-tighter uppercase italic text-white drop-shadow-2xl">
-                  {item.titulo}
-                </h2>
-                <div class="mt-6 h-px w-24 bg-blue-500/50"></div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <button id="prevBtn" class="absolute left-6 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md p-4 rounded-full hover:bg-blue-600 border border-white/10 transition-all z-20 opacity-0 group-hover:opacity-100"> ❮ </button>
-        <button id="nextBtn" class="absolute right-6 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md p-4 rounded-full hover:bg-blue-600 border border-white/10 transition-all z-20 opacity-0 group-hover:opacity-100"> ❯ </button>
-        <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-          {destacados.map((_: any, i: number) => (
-            <div class={`dot h-1 w-8 rounded-full transition-all duration-300 ${i === 0 ? 'bg-blue-500 shadow-[0_0_10px_#3b82f6]' : 'bg-white/20'}`}></div>
-          ))}
-        </div>
-      </div>
-    </section>
-
-    <!-- GALERÍA DINÁMICA -->
-    <section id="gallery" class="max-w-6xl mx-auto px-4 mb-20">
-      <div class="flex flex-col items-center mb-12">
-        <h2 class="text-xl font-bold border border-gray-600 px-8 py-2 rounded-full mb-8 bg-gray-900/50 uppercase tracking-widest">Galeria</h2> 
-        <div class="flex gap-8 mb-12 relative border-b border-gray-800 w-full justify-center">
-          <button class="filter-btn active relative pb-4 text-xs font-mono uppercase tracking-widest text-white" data-filter="all">
-            Todos los proyetos
-            <div class="filter-line absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transition-all duration-300"></div>
-          </button>
-          <button class="filter-btn relative pb-4 text-xs font-mono uppercase tracking-widest text-gray-500 hover:text-blue-400" data-filter="Concept Art">
-            Arte Conceptual
-            <div class="filter-line absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300"></div>
-          </button>
-          <button class="filter-btn relative pb-4 text-xs font-mono uppercase tracking-widest text-gray-500 hover:text-blue-400" data-filter="Characters">
-            Personajes
-            <div class="filter-line absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300"></div>
-          </button>
-        </div>
-        <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-3 gap-10 w-full">
-          {proyectos.map((item: any, index: number) => (
-            <a href={`/project/${item.slug.current}`} class={`project-card flex flex-col items-center gap-4 group ${index >= 6 ? 'hidden' : ''}`} data-category={item.categoria}>
-              <div class="w-full aspect-4/5 bg-gray-900 border border-gray-800 rounded-xl overflow-hidden hover:border-blue-500 transition-all shadow-2xl relative">
-                <img src={urlFor(item.portada).width(600).url()} alt={item.titulo} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-              </div>
-              <div class="text-center">
-                <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-400 mb-1">{item.categoria}</p>
-                <h3 class="font-bold text-lg tracking-tight group-hover:text-blue-300 transition-colors uppercase italic">{item.titulo}</h3>
-              </div>
-            </a>
-          ))}
-        </div>
-        {proyectos.length > 6 && (
-          <div class="flex justify-center mt-12">
-            <button id="load-more" class="px-8 py-3 border border-gray-700 rounded-full font-mono text-xs hover:bg-white hover:text-black transition-all uppercase tracking-tighter"> Ver Más</button>
-          </div>
-        )}
-      </div>
-    </section>
-
-    <!-- SOBRE MÍ  -->
-    <section id="about" class="max-w-5xl mx-auto px-4 py-20 border-t border-gray-900">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-16 items-start">       
-        <!-- COLUMNA IZQUIERDA CON FOTO -->
-        <div class="lg:col-span-4 flex flex-col items-center lg:items-start gap-6">
-          <div class="w-full aspect-square max-w-[280px] rounded-3xl border-2 border-blue-500/30 flex items-center justify-center bg-gray-900 overflow-hidden shadow-[0_0_30px_rgba(59,130,246,0.1)]">
-            {autor?.image && <img src={urlFor(autor.image).width(500).url()} alt="D_Arc" class="w-full h-full object-cover" />}
-          </div>
-          <div class="text-center lg:text-left">
-            <p class="text-2xl font-black italic uppercase tracking-tighter">Webos</p>
-          </div>
-        </div>
-        <!-- COLUMNADERECHA CON TEXTO Y HABILIDADES -->
-        <div class="lg:col-span-8">
-          <div class="flex flex-col md:flex-row justify-between gap-8 mb-12">
-            <!-- DESCRIPCION -->
-            <div class="flex-1">
-              <h2 class="text-4xl font-black mb-6 uppercase italic tracking-tighter">HOLA </h2>
-              <p class="text-gray-400 leading-relaxed italic mb-4">
-                Soy <strong class="text-white">Jonna D Arc</strong>. Artista digital.
-              </p>
-              <p class="text-gray-400 leading-relaxed italic mb-8">
-                Especializado en Concept Art y diseño de personajes, integrando una visión técnica y detallada en cada proyecto.
-              </p>
-            </div>
-            <!-- HABILIDADES -->
-            <div class="shrink-0">
-              <h4 class="font-mono text-[10px] text-gray-500 uppercase tracking-[0.3em] mb-6 text-center md:text-left">Habilidades</h4>
-              <div class="grid grid-cols-3 gap-4">
-                {habilidadesData.map((skill: any) => (
-                  <div 
-                    class="w-12 h-12 bg-gray-900/50 border border-gray-800 rounded-lg flex items-center justify-center p-2 group hover:border-blue-500 transition-all shadow-lg" 
-                    title={skill.nombre}
-                  >
-                    {skill.icono ? (
-                      <img 
-                        src={urlFor(skill.icono).width(100).url()} 
-                        class="w-full h-full object-contain grayscale group-hover:grayscale-0 transition-all duration-300" 
-                        alt={skill.nombre} 
-                      />
-                    ) : (
-                      <span class="text-[8px] font-mono">{skill.nombre.substring(0,3)}</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <!-- BOTONES DE ACCIÓN Y REDES  -->
-          <div class="flex flex-col sm:flex-row items-center gap-6 pt-8 border-t border-gray-900">
-            <!-- BOTÓN EXPERIENCIA -->
-            <button 
-              id="toggle-timeline" 
-              class="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 border border-gray-500/50 rounded-xl bg-gray-600/10 hover:border-green-600/60 transition-all font-mono text-xs uppercase tracking-widest"
-            >
-              <span>Experiencia</span>
-              <svg id="timeline-icon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-            </button>
-            <!-- REDES SOCIALES -->
-            <div class="flex gap-4">
-              <a href="#" target="_blank" class="p-4 bg-gray-900/50 border border-gray-800 hover:border-blue-500 rounded-xl transition-all group">
-                <svg class="w-5 h-5 text-gray-500 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-              </a>
-              <a href="#" target="_blank" class="p-4 bg-gray-900/50 border border-gray-800 hover:border-red-500 rounded-xl transition-all group">
-                <svg class="w-5 h-5 text-gray-500 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-              </a>
-              <a href="#" target="_blank" class="p-4 bg-gray-900/50 border border-gray-800 hover:border-pink-500 rounded-xl transition-all group">
-                <svg class="w-5 h-5 text-gray-500 group-hover:text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- EXPERIENCIA EN LIENA DE TIEMPO -->
-      <div id="timeline-container" class="hidden opacity-0 translate-y-4 transition-all duration-500 border-l-2 border-gray-800 ml-6 md:ml-32 pl-8 space-y-12 pb-10">
-        {proyectos.map((proj: any) => (
-          <div class="relative">
-            <div class="absolute -left-[41px] top-1 w-4 h-4 rounded-full bg-blue-600 border-4 border-[#0a0a0a] shadow-[0_0_10px_rgba(37,99,235,0.8)]"></div>
-            <div class="flex flex-col md:flex-row md:items-baseline gap-2">
-              <span class="font-mono text-[10px] text-blue-500 uppercase tracking-tighter">{new Date(proj._createdAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'short' })}</span>
-              <h3 class="text-lg font-bold uppercase italic text-gray-200">{proj.titulo}</h3>
-            </div>
-            <p class="font-mono text-[10px] text-gray-500 uppercase tracking-widest">{proj.categoria}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-
-    <!-- CONTACTO -->
-    <section id="contact" class="max-w-4xl mx-auto px-4 py-24">
-      <div class="flex flex-col items-center">
-        <h2 class="text-xl font-bold border border-gray-600 px-8 py-2 rounded-full mb-12 bg-gray-900/50 uppercase tracking-widest">Contacto</h2>
-        <div class="w-full bg-gray-900/40 border border-gray-800 rounded-2xl p-8 backdrop-blur-sm relative overflow-hidden shadow-2xl">
-          <div id="form-status" class="hidden absolute inset-0 z-20 bg-gray-900/95 flex flex-col items-center justify-center text-center p-6">
-            <p class="text-blue-400 font-mono text-sm uppercase tracking-tighter" id="status-text"></p>
-          </div>
-          <form id="contact-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input required name="name" type="text" placeholder="Nombre" class="bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-sm text-white font-mono focus:border-blue-500 outline-none" />
-            <input required name="email" type="email" placeholder="Correo Electrónico" class="bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-sm text-white font-mono focus:border-blue-500 outline-none" />
-            <textarea required name="message" rows="4" placeholder="Mensaje" class="bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-sm md:col-span-2 text-white font-mono focus:border-blue-500 outline-none resize-none"></textarea>
-            <div class="md:col-span-2 flex justify-center mt-4">
-              <button type="submit" id="submit-btn" class="px-12 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full transition-all uppercase tracking-widest">
-                <span id="btn-text">Enviar Mensaje</span>
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </section>
-    <footer class="py-10 text-center border-t border-gray-900">
-      <p class="text-gray-600 text-[10px] font-mono tracking-widest uppercase italic">
-        &copy; 2026 D_Arc // Jonna D Arc // Built with Astro & Sanity
-      </p>
-    </footer>
     <script>
-      // SCRIPT PARA INTERACTIVIDAD
-      let currentIndex = 0;
-      const items = document.querySelectorAll('.slider-item');
-      const dots = document.querySelectorAll('.dot');
-      const totalItems = items.length;
+      // Importación modular de la lógica
+      import { initSlider } from '../lib/slider';
+      import { initFilters } from '../lib/filters';
+      import { initContact } from '../lib/contact';
 
-      function showSlide(index: number) {
-        items.forEach((item, i) => {
-          if (i === index) {
-            item.classList.add('opacity-100', 'z-10');
-            item.classList.remove('opacity-0', 'z-0');
-          } else {
-            item.classList.remove('opacity-100', 'z-10');
-            item.classList.add('opacity-0', 'z-0');
-          }
-        });
-        // ACTUALIZAR PUNTOS DINÁMICAMENTE
-        dots.forEach((dot, i) => {
-          if (i === index) {
-            dot.classList.add('bg-blue-500', 'shadow-[0_0_10px_#3b82f6]');
-            dot.classList.remove('bg-white/20');
-          } else {
-            dot.classList.remove('bg-blue-500', 'shadow-[0_0_10px_#3b82f6]');
-            dot.classList.add('bg-white/20');
-          }
-        });
-      }
-        document.getElementById('nextBtn')?.addEventListener('click', () => {
-        currentIndex = (currentIndex + 1) % totalItems;
-        showSlide(currentIndex);
-      });
-        document.getElementById('prevBtn')?.addEventListener('click', () => {
-        currentIndex = (currentIndex - 1 + totalItems) % totalItems;
-        showSlide(currentIndex);
-      });
-        setInterval(() => {
-            if(totalItems > 0) {
-              currentIndex = (currentIndex + 1) % totalItems;
-              showSlide(currentIndex);
-            }
-        }, 9000);
-        // FILTRADO DE PROYECTOS
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        const projectCards = document.querySelectorAll('.project-card');
-        const loadMoreBtn = document.getElementById('load-more');
-        let currentFilter = 'all';
-        function updateFiltersUI(activeBtn) {
-          filterBtns.forEach(btn => {
-            const line = btn.querySelector('.filter-line');
-            btn.classList.remove('text-white', 'active');
-            btn.classList.add('text-gray-500');
-            if (line) line.style.width = '0%';
-          });
-          activeBtn.classList.remove('text-gray-500');
-          activeBtn.classList.add('text-white', 'active');
-          const activeLine = activeBtn.querySelector('.filter-line');
-          if (activeLine) activeLine.style.width = '100%';
-        }
-        function filterProjects(showAll = false) {
-          let visibleCount = 0;         
-          projectCards.forEach((card) => {
-            const category = card.getAttribute('data-category');
-            const isMatch = currentFilter === 'all' || category === currentFilter;            
-            if (isMatch) {
-              // MOSTRAR SOLO LOS PRIMEROS 6 PROYECTOS QUE COINCIDEN CON EL FILTRO
-              // A MENOS QUE SE HAYA PRESIONADO "LOAD MORE"
-              if (showAll || visibleCount < 6) {
-                card.classList.remove('hidden');
-                card.style.display = 'flex';
-              } else {
-                card.classList.add('hidden');
-                card.style.display = 'none';
-              }
-              visibleCount++;
-            } else {
-              card.classList.add('hidden');
-              card.style.display = 'none';
-            }
-          });
-          // BOTON DE VER MÁS
-          if (loadMoreBtn) {
-            const totalInCategory = Array.from(projectCards).filter(c => 
-              currentFilter === 'all' || c.getAttribute('data-category') === currentFilter
-            ).length;
+      // Inicialización en el cliente
+      document.addEventListener('DOMContentLoaded', () => {
+        initSlider();
+        initFilters();
+        initContact();
 
-            loadMoreBtn.style.display = (totalInCategory > 6 && !showAll) ? 'block' : 'none';
+        // Lógica de Timeline (Experiencia) 
+        const timelineBtn = document.getElementById('toggle-timeline');
+        const timelineContent = document.getElementById('timeline-container');
+        const timelineIcon = document.getElementById('timeline-icon');
+        let isTimelineVisible = false;
+
+        timelineBtn?.addEventListener('click', () => {
+          isTimelineVisible = !isTimelineVisible;
+          if(isTimelineVisible && timelineContent && timelineIcon && timelineBtn) {
+            timelineContent.classList.remove('hidden');
+            setTimeout(() => timelineContent.classList.add('opacity-100', 'translate-y-0'), 10);
+            timelineIcon.classList.add('rotate-180');
+            (timelineBtn.querySelector('span') as HTMLElement).innerText = "Ocultar Experiencia";
+          } else if (timelineContent && timelineIcon && timelineBtn) {
+            timelineContent.classList.remove('opacity-100', 'translate-y-0');
+            timelineIcon.classList.remove('rotate-180');
+            (timelineBtn.querySelector('span') as HTMLElement).innerText = "Ver Experiencia";
+            setTimeout(() => { if(!isTimelineVisible) timelineContent.classList.add('hidden'); }, 500);
           }
-        }
-        // BOTONES DE FILTRO
-        filterBtns.forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            currentFilter = e.currentTarget.getAttribute('data-filter') || 'all';
-            updateFiltersUI(e.currentTarget);
-            filterProjects(false); 
-          });
         });
-        // ACCIÓN DE BOTÓN "VER MÁS"
-        loadMoreBtn?.addEventListener('click', () => {
-          filterProjects(true); 
-        });
-      // LÓGICA DE TOGGLE PARA EXPERIENCIA EN LÍNEA DE TIEMPO
-      const toggleTimeline = document.getElementById('toggle-timeline');
-      const timelineBox = document.getElementById('timeline-container');
-      const arrow = document.getElementById('timeline-icon');
-      let isTimelineOpen = false;
-      toggleTimeline?.addEventListener('click', () => {
-        isTimelineOpen = !isTimelineOpen;
-        if(isTimelineOpen) {
-          timelineBox?.classList.remove('hidden');
-          setTimeout(() => timelineBox?.classList.add('opacity-100', 'translate-y-0'), 10);
-          arrow?.classList.add('rotate-180');
-          (toggleTimeline.querySelector('span') as HTMLElement).innerText = "Ocultar Experiencia";
-        } else {
-          timelineBox?.classList.remove('opacity-100', 'translate-y-0');
-          arrow?.classList.remove('rotate-180');
-          (toggleTimeline.querySelector('span') as HTMLElement).innerText = "Ver Experiencia";
-          setTimeout(() => { if(!isTimelineOpen) timelineBox?.classList.add('hidden'); }, 500);
-        }
-      });
-      // LÓGICA DE ENVÍO DE FORMULARIO DE CONTACTO
-      const form = document.getElementById('contact-form') as HTMLFormElement;
-      form?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('btn-text');
-        if(btn) btn.innerText = "PROCESSING...";
-        try {
-          const res = await fetch('/api/send-email', { method: 'POST', body: new FormData(form) });
-          if(res.ok) { 
-            const st = document.getElementById('form-status');
-            const txt = document.getElementById('status-text');
-            if(st && txt) { st.classList.remove('hidden'); txt.innerText = "SUCCESS: MESSAGE TRANSMITTED."; form.reset(); setTimeout(() => st.classList.add('hidden'), 4000); }
-          }
-        } finally { if(btn) btn.innerText = "EXECUTE_SEND"; }
       });
     </script>
   </main>

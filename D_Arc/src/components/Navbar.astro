@@ -1,0 +1,38 @@
+---
+// src/components/Navbar.astro
+---
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-center py-6 pointer-events-none">
+  <div class="flex gap-8 border border-gray-700/30 rounded-full px-10 py-3 bg-gray-900/20 backdrop-blur-md pointer-events-auto shadow-2xl">
+    <a 
+      href="#home" 
+      class="text-gray-400 hover:text-blue-400 transition-all duration-300 font-medium font-mono text-xs uppercase tracking-widest"
+    >
+      Inicio
+    </a>
+    <a 
+      href="#gallery" 
+      class="text-gray-400 hover:text-blue-400 transition-all duration-300 font-medium font-mono text-xs uppercase tracking-widest"
+    >
+      Galeria
+    </a>
+    <a 
+      href="#about" 
+      class="text-gray-400 hover:text-blue-400 transition-all duration-300 font-medium font-mono text-xs uppercase tracking-widest"
+    >
+      Sobre Mi
+    </a>
+    <a 
+      href="#contact" 
+      class="text-gray-400 hover:text-blue-400 transition-all duration-300 font-medium font-mono text-xs uppercase tracking-widest"
+    >
+      Contacto
+    </a>
+  </div>
+</nav>
+
+<style>
+  /* Estilo opcional para resaltar el link activo al hacer scroll */
+  a:hover {
+    text-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+  }
+</style>

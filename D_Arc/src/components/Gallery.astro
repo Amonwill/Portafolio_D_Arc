@@ -1,0 +1,43 @@
+---
+const { proyectos, urlFor } = Astro.props;
+---
+<section id="gallery" class="max-w-6xl mx-auto px-4 mb-20">
+  <div class="flex flex-col items-center mb-12">
+    <h2 class="text-xl font-bold border border-gray-600 px-8 py-2 rounded-full mb-8 bg-gray-900/50 uppercase tracking-widest">Galeria</h2> 
+    
+    <div class="flex gap-8 mb-12 relative border-b border-gray-800 w-full justify-center">
+      <button class="filter-btn active relative pb-4 text-xs font-mono uppercase tracking-widest text-white" data-filter="all">
+        Todos los proyectos
+        <div class="filter-line absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transition-all duration-300"></div>
+      </button>
+      <button class="filter-btn relative pb-4 text-xs font-mono uppercase tracking-widest text-gray-500 hover:text-blue-400" data-filter="Concept Art">
+        Arte Conceptual
+        <div class="filter-line absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300"></div>
+      </button>
+      <button class="filter-btn relative pb-4 text-xs font-mono uppercase tracking-widest text-gray-500 hover:text-blue-400" data-filter="Characters">
+        Personajes
+        <div class="filter-line absolute bottom-0 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300"></div>
+      </button>
+    </div>
+
+    <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-3 gap-10 w-full">
+      {proyectos.map((item: any, index: number) => (
+        <a href={`/project/${item.slug.current}`} class={`project-card flex flex-col items-center gap-4 group ${index >= 6 ? 'hidden' : ''}`} data-category={item.categoria}>
+          <div class="w-full aspect-4/5 bg-gray-900 border border-gray-800 rounded-xl overflow-hidden hover:border-blue-500 transition-all shadow-2xl relative">
+            <img src={urlFor(item.portada).width(600).url()} alt={item.titulo} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          </div>
+          <div class="text-center">
+            <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-blue-400 mb-1">{item.categoria}</p>
+            <h3 class="font-bold text-lg tracking-tight group-hover:text-blue-300 transition-colors uppercase italic">{item.titulo}</h3>
+          </div>
+        </a>
+      ))}
+    </div>
+    
+    {proyectos.length > 6 && (
+      <div class="flex justify-center mt-12">
+        <button id="load-more" class="px-8 py-3 border border-gray-700 rounded-full font-mono text-xs hover:bg-white hover:text-black transition-all uppercase tracking-tighter"> Ver Más</button>
+      </div>
+    )}
+  </div>
+</section>

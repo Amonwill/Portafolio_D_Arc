@@ -1,0 +1,40 @@
+---
+// src/components/Contact.astro
+---
+<section id="contact" class="max-w-4xl mx-auto px-4 py-24">
+  <div class="flex flex-col items-center">
+    <h2 class="text-xl font-bold border border-gray-600 px-8 py-2 rounded-full mb-12 bg-gray-900/50 uppercase tracking-widest">
+      Contacto
+    </h2>
+    
+    <div class="w-full bg-gray-900/40 border border-gray-800 rounded-2xl p-8 backdrop-blur-sm relative overflow-hidden shadow-2xl">
+      <div id="form-status" class="hidden absolute inset-0 z-20 bg-gray-900/95 flex flex-col items-center justify-center text-center p-6">
+        <p class="text-blue-400 font-mono text-sm uppercase tracking-tighter" id="status-text"></p>
+      </div>
+
+      <form id="contact-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="flex flex-col gap-2">
+          <label class="font-mono text-[10px] text-gray-500 uppercase ml-2">User_Name</label>
+          <input required name="name" type="text" placeholder="Tu nombre..." class="bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-sm text-white font-mono focus:border-blue-500 outline-none transition-all" />
+        </div>
+        
+        <div class="flex flex-col gap-2">
+          <label class="font-mono text-[10px] text-gray-500 uppercase ml-2">User_Email</label>
+          <input required name="email" type="email" placeholder="tu@correo.com" class="bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-sm text-white font-mono focus:border-blue-500 outline-none transition-all" />
+        </div>
+
+        <div class="flex flex-col gap-2 md:col-span-2">
+          <label class="font-mono text-[10px] text-gray-500 uppercase ml-2">Message_Body</label>
+          <textarea required name="message" rows="4" placeholder="Escribe tu mensaje aquí..." class="bg-black/50 border border-gray-700 rounded-lg px-4 py-3 text-sm text-white font-mono focus:border-blue-500 outline-none resize-none transition-all"></textarea>
+        </div>
+
+        <div class="md:col-span-2 flex justify-center mt-4">
+          <button type="submit" id="submit-btn" class="group relative px-12 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full transition-all uppercase tracking-widest shadow-[0_0_20px_rgba(37,99,235,0.3)]">
+            <span id="btn-text">Ejecutar_Envío</span>
+            <div class="absolute inset-0 rounded-full bg-white/20 scale-0 group-hover:scale-100 transition-transform duration-500 pointer-events-none"></div>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
