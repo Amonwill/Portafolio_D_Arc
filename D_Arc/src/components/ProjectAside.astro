@@ -2,50 +2,65 @@
 // src/components/ProjectAside.astro
 const { project, colors } = Astro.props;
 ---
+
 <aside class="lg:col-span-5 lg:sticky lg:top-24 lg:h-[calc(100vh-140px)] flex flex-col overflow-hidden">
   <div class="mb-6 flex-none">
-    <a href="/#gallery" class="group flex items-center gap-2 text-blue-500 font-mono text-[13px] uppercase tracking-widest hover:text-white transition-all">
-      <span>❮</span> VOLVER A LA GALERÍA
+    <a href="/#gallery" class="group flex items-center gap-2 text-pink-500 font-mono text-[13px] uppercase tracking-widest hover:text-white transition-all">
+      <span class="text-lg">❮</span> VOLVER A LA GALERÍA
     </a>
   </div>
 
-  <div class="flex-1 overflow-y-auto custom-scrollbar bg-gray-900/10 rounded-2xl p-6 border border-white/5 shadow-inner overscroll-contain">
-    <header class="mb-8">
-      <p class="text-blue-400 font-mono text-xs uppercase mb-2 tracking-widest">{project.categoria}</p>
-      <h1 class="text-5xl font-black italic uppercase leading-none tracking-tighter mb-4 break-words">{project.titulo}</h1>
+  <div class="flex-1 overflow-y-auto custom-scrollbar bg-gray-900/10 rounded-2xl p-8 border border-white/5 shadow-inner overscroll-contain">
+    <header class="mb-10">
+      <p class="text-pink-500/60 font-mono text-[10px] uppercase mb-3 tracking-[0.3em]">{project.categoria || 'Concept Art'}</p>
       
-      <div class="flex gap-4 mt-6 font-mono">
-        <div class="flex flex-col">
-          <span class="text-[9px] text-gray-500 uppercase tracking-widest">Estado del Proyecto</span>
-          <span class={`text-[11px] uppercase ${project.estado === 'TERMINADO' ? 'text-green-500' : 'text-yellow-500'}`}>
+      <h1 class="text-pink-500 text-6xl font-black italic uppercase leading-[0.9] tracking-tighter mb-6 break-words drop-shadow-[0_0_12px_rgba(236,72,153,0.6)]">
+        {project.titulo}
+      </h1>
+      
+      <div class="flex gap-6 mt-8 font-mono border-t border-white/5 pt-6">
+        <div class="flex flex-col gap-1">
+          <span class="text-[9px] text-gray-500 uppercase tracking-widest">Estado</span>
+          <span class={`text-[11px] font-bold tracking-widest ${project.estado === 'TERMINADO' ? 'text-green-400' : 'text-yellow-400'}`}>
             // {project.estado || 'En Proceso'}
           </span>
         </div>
         <div class="w-px h-8 bg-white/10"></div>
-        <div class="flex flex-col">
+        <div class="flex flex-col gap-1">
           <span class="text-[9px] text-gray-500 uppercase tracking-widest">Versión</span>
-          <span class="text-[11px] text-blue-400 uppercase">v{project.version || '1.0'}</span>
+          <span class="text-[11px] text-gray-400 font-sans tracking-wider">v{project.version || '1.0.0'}</span>
         </div>
       </div>
     </header>
 
-    <section class="prose prose-invert mb-12 font-mono">
-      <h2 class="text-[13px] text-gray-500 uppercase tracking-[0.4em] mb-4">Acerca del Proyecto</h2>
-      <p class="text-gray-400 text-[17px] leading-relaxed italic break-words whitespace-normal">
+    <section class="mb-12 font-mono">
+      <h2 class="text-[11px] text-gray-500 uppercase tracking-[0.4em] mb-5 border-b border-white/5 pb-2">Acerca del Proyecto</h2>
+      
+      <p class="text-pink-200/80 text-sm leading-[1.8] italic break-words whitespace-pre-line font-sans tracking-wide">
         {project.descripcionLargo}
       </p>
     </section>
 
-    {colors.length > 0 && (
+    {colors && colors.length > 0 && (
       <div class="mt-8">
-        <h4 class="font-mono text-[13px] text-gray-500 uppercase tracking-[0.3em] mb-4">Color Palette</h4>
-        <div class="flex gap-3 flex-wrap">
+        <h4 class="font-mono text-[11px] text-gray-500 uppercase tracking-[0.3em] mb-6 border-b border-white/5 pb-2">Color Palette</h4>
+        <div class="grid grid-cols-4 gap-4">
           {colors.map((color: any) => (
-            <div class="group relative flex flex-col items-center">
-              <div class="w-10 h-10 rounded-lg border border-white/10" style={{ backgroundColor: color.background }}></div>
-              <span class="absolute -top-8 scale-75 opacity-0 group-hover:opacity-100 group-hover:scale-100 font-mono text-[10px] px-2 py-1 rounded transition-all z-50 border border-white/10 shadow-xl" style={{ backgroundColor: color.background, color: color.foreground }}>
+            <div class="group relative flex flex-col items-center gap-2">
+              <div 
+                class="w-full h-12 rounded-lg border border-white/10 shadow-inner transition-transform duration-300 group-hover:scale-105" 
+                style={{ backgroundColor: color.background }}
+              ></div>
+              <span class="font-mono text-[8px] text-gray-600 tracking-tighter uppercase">
                 {color.background}
               </span>
+              
+              <div 
+                class="absolute -top-10 scale-75 opacity-0 group-hover:opacity-100 group-hover:scale-100 font-mono text-[9px] px-2 py-1 rounded transition-all z-50 border border-white/20 shadow-2xl pointer-events-none" 
+                style={{ backgroundColor: color.background, color: color.foreground }}
+              >
+                HEX_{color.background}
+              </div>
             </div>
           ))}
         </div>
@@ -57,5 +72,20 @@ const { project, colors } = Astro.props;
 <style>
   aside {
     min-width: 0;
+  }
+  
+  /* Scrollbar técnica minimalista */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(236, 72, 153, 0.2);
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(236, 72, 153, 0.5);
   }
 </style>

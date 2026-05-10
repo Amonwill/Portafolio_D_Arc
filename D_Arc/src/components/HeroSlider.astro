@@ -12,22 +12,22 @@ const { destacados, urlFor } = Astro.props;
             alt={item.titulo} 
           />
           <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-            <p class="text-blue-500 font-mono text-xs tracking-[0.3em] mb-2 uppercase opacity-80">Featured Work</p>
+            <p class="text-pink-500 font-mono text-xs tracking-[0.3em] mb-2 uppercase opacity-80">Featured Work</p>
             <h2 class="text-5xl md:text-6xl font-black tracking-tighter uppercase italic text-white drop-shadow-2xl">
               {item.titulo}
             </h2>
-            <div class="mt-6 h-px w-24 bg-blue-500/50"></div>
+            <div class="mt-6 h-px w-24 bg-pink-500/50"></div>
           </div>
         </div>
       ))}
     </div>
     
-    <button id="prevBtn" class="absolute left-6 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md p-4 rounded-full hover:bg-blue-600 border border-white/10 transition-all z-20 opacity-0 group-hover:opacity-100"> ❮ </button>
-    <button id="nextBtn" class="absolute right-6 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md p-4 rounded-full hover:bg-blue-600 border border-white/10 transition-all z-20 opacity-0 group-hover:opacity-100"> ❯ </button>
+    <button id="prevBtn" class="absolute left-6 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md p-4 rounded-full hover:bg-pink-600 border border-white/10 transition-all z-20 opacity-0 group-hover:opacity-100"> ❮ </button>
+    <button id="nextBtn" class="absolute right-6 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md p-4 rounded-full hover:bg-pink-600 border border-white/10 transition-all z-20 opacity-0 group-hover:opacity-100"> ❯ </button>
 
     <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
       {destacados.map((_: any, i: number) => (
-        <div class={`dot h-1 w-8 rounded-full transition-all duration-300 ${i === 0 ? 'bg-blue-500 shadow-[0_0_10px_#3b82f6]' : 'bg-white/20'}`}></div>
+        <div class={`dot h-1 w-8 rounded-full transition-all duration-300 ${i === 0 ? 'bg-pink-500 shadow-[0_0_10px_#ec4899]' : 'bg-white/20'}`}></div>
       ))}
     </div>
   </div>
