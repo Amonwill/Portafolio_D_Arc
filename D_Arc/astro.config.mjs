@@ -1,24 +1,22 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import sanity from '@sanity/astro';
-// PARA DESPLEGAR EN NETLIFY
-import netlify from '@astrojs/netlify'; 
+import vercel from '@astrojs/vercel'; 
 
 export default defineConfig({
   output: 'server', 
-  adapter: netlify(),
+  adapter: vercel(),
 
   vite: {
-    plugins:[tailwindv4()],
+    plugins: [tailwindcss()],
   },
 
   integrations: [
     sanity({
-      // CONEXION CON SANITY PARA OBTENER LAS IMAGENES Y LOS DATOS DE LOS PROYECTOS
       projectId: 'fqzw8ecf', 
       dataset: 'production',
       useCdn: false,
-      studioUrl: '/admin',
+      studioUrl: 'https://jonathan-cruz-darc.sanity.studio/', // 4. Tu URL real del studio
     }),
   ],
 });
