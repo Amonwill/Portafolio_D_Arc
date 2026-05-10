@@ -16,14 +16,14 @@ const { project, colors } = Astro.props;
       
       <div class="flex gap-4 mt-6 font-mono">
         <div class="flex flex-col">
-          <span class="text-[9px] text-gray-500 uppercase tracking-widest">Estado_Doc</span>
-          <span class={`text-[11px] uppercase ${project.estado === 'completado' ? 'text-green-500' : 'text-yellow-500'}`}>
+          <span class="text-[9px] text-gray-500 uppercase tracking-widest">Estado del Proyecto</span>
+          <span class={`text-[11px] uppercase ${project.estado === 'TERMINADO' ? 'text-green-500' : 'text-yellow-500'}`}>
             // {project.estado || 'En Proceso'}
           </span>
         </div>
         <div class="w-px h-8 bg-white/10"></div>
         <div class="flex flex-col">
-          <span class="text-[9px] text-gray-500 uppercase tracking-widest">Versión_Sys</span>
+          <span class="text-[9px] text-gray-500 uppercase tracking-widest">Versión</span>
           <span class="text-[11px] text-blue-400 uppercase">v{project.version || '1.0'}</span>
         </div>
       </div>
